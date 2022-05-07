@@ -24,8 +24,12 @@
 -export([init/1]).
 
 ensure_child(InstId, Group, ResourceType, Config, Opts) ->
-    supervisor:start_child(?MODULE, [InstId, Group, ResourceType, Config, Opts]),
-    ok.
+    case supervisor:start_child(?MODULE, [InstId, Group, ResourceType, Config, Opts]) of
+        {error, already_present} -> ok;
+        {error, {already_started, _Pid}} -> ok;
+        {'ok', _} -> ok;
+        {error, _} = Error -> Error
+    end.
 
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
